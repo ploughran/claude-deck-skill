@@ -551,13 +551,78 @@ For `salesforce1` the SHA-256 hash is:
 
 ### 13. Responsive
 
-At `max-width: 800px`, collapse two-column layouts to single column:
+Every deck must be mobile-readable. Decks are shared via URL — customers
+will open them on phones. Use two breakpoints: tablet (≤900px) and mobile (≤600px).
+
 ```css
-@media (max-width: 800px) {
-  .panel-layout { grid-template-columns: 1fr; }
-  .title-scenes { grid-template-columns: repeat(3, 1fr); }
+/* ── Tablet (≤900px) ─────────────────────────────── */
+@media (max-width: 900px) {
+  .slide-inner { padding: 60px 28px 32px; }
+
+  /* Hide keyboard hint in nav */
+  .nav-hint { display: none; }
+  .nav-bar  { gap: 8px; padding: 0 14px; }
+
+  /* Stack arch diagrams vertically */
+  .arch-diagram, .panel-layout { grid-template-columns: 1fr !important; }
+  .arch-arrow { transform: rotate(90deg); margin: 0 auto; }
+
+  /* Chat: stack columns, hide sidebar */
+  .chat-layout   { grid-template-columns: 1fr; }
+  .chat-sidebar  { display: none; }
+
+  /* Content grids: 2 cols on tablet */
+  .caps-grid, .what-grid { grid-template-columns: 1fr 1fr; }
+  .next-grid              { grid-template-columns: 1fr 1fr; }
+  .obj-grid               { grid-template-columns: 1fr; }
+}
+
+/* ── Mobile (≤600px) ─────────────────────────────── */
+@media (max-width: 600px) {
+  .slide-inner { padding: 58px 16px 24px; }
+
+  /* Nav: hide label, shrink dots */
+  .nav-label   { display: none; }
+  .nav-brand   { font-size: 13px; }
+  .nav-dot     { width: 6px; height: 6px; }
+  .nav-counter { font-size: 11px; }
+
+  /* Title slide: stack hero + video vertically */
+  .title-hero-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 24px !important;
+  }
+
+  /* Headlines scale down */
+  .title-h1   { font-size: 28px !important; }
+  .slide-h1   { font-size: 20px !important; }
+  .slide-desc { font-size: 13px; }
+
+  /* Tags wrap tightly */
+  .title-tag  { font-size: 11px; padding: 4px 10px; }
+  .logo-badge { font-size: 10px; padding: 4px 9px; }
+
+  /* Chat tabs: horizontally scrollable, no wrap */
+  .tab-row { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 4px; }
+  .tab-btn { font-size: 11px; padding: 5px 10px; white-space: nowrap; flex-shrink: 0; }
+
+  /* All multi-col grids collapse to single col */
+  .caps-grid, .what-grid, .next-grid,
+  .obj-grid, .panel-layout { grid-template-columns: 1fr !important; }
+
+  /* Inline grids (set via style="") — target by slide id */
+  /* Add: #sN > .slide-inner > div[style*="grid"] { display:flex!important; flex-direction:column!important; } */
+
+  /* Closing bar stacks */
+  .closing-bar { flex-direction: column; text-align: center; gap: 6px; }
 }
 ```
+
+**Rules:**
+- Never use a fixed `height` or `min-height` that would cause overflow on small screens
+- Inline `style="display:grid;grid-template-columns:..."` overrides won't respond to media queries — target them by parent selector or add a named class
+- Always test the title slide at 390px width (iPhone 15 viewport)
 
 ---
 
