@@ -579,19 +579,39 @@ will open them on phones. Use two breakpoints: tablet (≤900px) and mobile (≤
 
 /* ── Mobile (≤600px) ─────────────────────────────── */
 @media (max-width: 600px) {
-  .slide-inner { padding: 58px 16px 24px; }
 
-  /* Nav: hide label, shrink dots */
+  /* Slides stack vertically; page scrolls. No translateX —
+     avoids horizontal overflow clipping on small screens. */
+  body      { overflow-x: hidden; overflow-y: auto; }
+  #carousel { position: relative; height: auto; overflow: visible; }
+  .slide    { position: relative; transform: none !important;
+              transition: none; visibility: visible;
+              pointer-events: auto; display: none; width: 100%; }
+  .slide.active { display: flex; }
+  .slide.prev   { display: none; }
+
+  /* Let slide-inner flow naturally */
+  .slide-chat .slide-inner,
+  .slide-inner { overflow: visible; height: auto; flex: none; }
+
+  /* Nav: hide dots entirely (counter is enough) + hide label */
+  .nav-dots    { display: none; }
   .nav-label   { display: none; }
   .nav-brand   { font-size: 13px; }
-  .nav-dot     { width: 6px; height: 6px; }
   .nav-counter { font-size: 11px; }
+
+  .slide-inner { padding: 58px 16px 24px; }
 
   /* Title slide: stack hero + video vertically */
   .title-hero-grid {
     display: flex !important;
     flex-direction: column !important;
     gap: 24px !important;
+  }
+
+  /* Arch compare: stack columns vertically */
+  .arch-compare-grid {
+    display: flex !important; flex-direction: column !important; gap: 8px !important;
   }
 
   /* Headlines scale down */
@@ -607,12 +627,16 @@ will open them on phones. Use two breakpoints: tablet (≤900px) and mobile (≤
   .tab-row { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 4px; }
   .tab-btn { font-size: 11px; padding: 5px 10px; white-space: nowrap; flex-shrink: 0; }
 
+  /* Chat windows: fixed height so input bar is always visible */
+  .chat-window  { flex: none; height: 400px; min-height: 0; display: flex; flex-direction: column; }
+  .chat-body    { flex: 1; min-height: 0; overflow-y: auto; height: auto; }
+  .chat-chips   { flex-shrink: 0; }
+  .chat-input-bar { flex-shrink: 0; }
+
   /* All multi-col grids collapse to single col */
   .caps-grid, .what-grid, .next-grid,
-  .obj-grid, .panel-layout { grid-template-columns: 1fr !important; }
-
-  /* Inline grids (set via style="") — target by slide id */
-  /* Add: #sN > .slide-inner > div[style*="grid"] { display:flex!important; flex-direction:column!important; } */
+  .obj-grid, .panel-layout,
+  .assets-row-grid { grid-template-columns: 1fr !important; }
 
   /* Closing bar stacks */
   .closing-bar { flex-direction: column; text-align: center; gap: 6px; }
@@ -621,8 +645,53 @@ will open them on phones. Use two breakpoints: tablet (≤900px) and mobile (≤
 
 **Rules:**
 - Never use a fixed `height` or `min-height` that would cause overflow on small screens
-- Inline `style="display:grid;grid-template-columns:..."` overrides won't respond to media queries — target them by parent selector or add a named class
+- **Never use `style="display:grid;grid-template-columns:..."` inline on elements that need to respond to breakpoints.** Always assign a named class (e.g. `title-hero-grid`, `arch-compare-grid`, `assets-row-grid`) and define the grid layout in CSS. Inline styles override media queries.
+- Chat windows on mobile need `flex: none; height: 400px` with `flex:1` body — if the container has no explicit height to flex against, the input bar will be pushed off-screen
 - Always test the title slide at 390px width (iPhone 15 viewport)
+
+### 14. Named Grid Classes — Required for Responsiveness
+
+**Never use `style="display:grid;grid-template-columns:..."` on elements that
+must collapse on mobile.** Inline styles have higher specificity than media
+queries — the breakpoint override will be silently ignored.
+
+Assign a named class for every multi-column layout that needs to respond:
+
+```html
+<!-- WRONG — media query can never override this -->
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:56px;">
+
+<!-- RIGHT — class can be overridden in @media block -->
+<div class="title-hero-grid">
+```
+
+```css
+/* Define the grid in CSS */
+.title-hero-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 56px;
+  align-items: center;
+}
+
+/* Collapse cleanly at mobile breakpoint */
+@media (max-width: 600px) {
+  .title-hero-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 24px !important;
+  }
+}
+```
+
+Common named grid classes to define in every deck:
+- `.title-hero-grid` — title slide two-column (headline + media)
+- `.arch-compare-grid` — arch comparison layout (left `fr` / center arrow / right `fr`)
+- `.assets-row-grid` — 2-col asset/card row grids
+- `.panel-layout` — interactive two-panel (chat left, value right) — already defined in section 3
+
+Only leave inline grids for tiny decorative elements (e.g. a 2-badge pill row
+inside a card) that will never need to collapse.
 
 ---
 
